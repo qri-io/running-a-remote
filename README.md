@@ -17,15 +17,15 @@ Qri has the capacity to run as a remote built-in, but needs to be configured to 
 Before we get into setting up a remote, it helps to see what one can actually do. Here's a quick rundown on pushing to a remote we've already set up:
 
 ```sh
-# install qri if you haven't already:
-curl -fsSL https://qri.io/install.sh
+# install qri if you haven't already. You may need to run with sudo:
+curl -fsSL https://qri.io/install.sh | bash -
 
 # we've set up a remote named "doug" that you can play with,
 # let's add it to our configuration, using "doug" as our alias for https://doug.qri.cloud
 qri config set remotes.doug https://doug.qri.cloud
 
-# next you'll need a dataset. 
-# If you don't already have one, the CLI quickstart has instructions for 
+# next you'll need a dataset.
+# If you don't already have one, the CLI quickstart has instructions for
 # creating one
 # https://qri.io/docs/getting-started/qri-cli-quickstart
 
@@ -57,3 +57,21 @@ qri push b5/usgs_earthquakes --remote local-docker-test
 ```
 
 Visit http://localhost:9000/list to see your dataset hosted by the local docker remote.
+
+## Next Steps
+
+The steps above will let you run an ephemeral qri remote for testing purposes.  If you want to set up something more permanent, here are some other steps to consider:
+
+### Persisting Data Using Docker Volumes
+
+If you use `docker run` with the `qriio/public-remote` docker image, you'll have a new remote running that stores its qri configuration and data inside the running container.  When the docker container is stopped, you'll lose everything.
+
+To persist the configuration and data, you can use docker volumes to ensure that the `.qri` directory lives on after the container stops.  `qriio/public-remote` stores data in `/data/qri`.
+
+In this `docker run` command, we map the directory `/root/qri` on the local filesystem to `/data/qri` in the container.  
+
+```shell
+docker run -p 9000:2503 -v /root/qri:/data/qri qriio/public-remote:latest
+```
+
+The container can be stopped and destroyed. Running the same `docker run` command again will start a new remote with the same qri identity and data.
